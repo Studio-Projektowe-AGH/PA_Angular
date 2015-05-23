@@ -43,6 +43,8 @@ angular.module('goAppSim', ['requestService'])
                 stop = $interval(function () {
                     if ($scope.stopItem != true) {
                         if($scope.QRcodes == 0  ){
+                            $scope.QRcodes = Math.floor((Math.random()*4) + 1);
+
                             if($scope.savedLocation !=null){
                                 //ewentualnie decyduj czy zostajesz czy wychodzisz
                                 sendRequest.sendCheckOut(function(){
@@ -52,7 +54,14 @@ angular.module('goAppSim', ['requestService'])
                                         sendRequest.sendLocation(function (location) {
                                             $scope.savedLocation = location;
                                             $scope.requestTable.push("POST : //events//location");
-                                            genRequests();
+                                            //decide if your location is  equivalent to "club" location
+                                            if(genBoolean() ){
+                                                $scope.localID = Math.floor( (Math.random()* $scope.clubList.length) );
+                                                sendRequest.sendCheckIn($scope.localID, function(){
+                                                    $scope.requestTable.push("POST : //events//checkin");
+                                                    genRequests();
+                                                });
+                                            }
                                         });
                                     })
                                 })
@@ -61,12 +70,12 @@ angular.module('goAppSim', ['requestService'])
                                     $scope.savedLocation = location;
                                     $scope.requestTable.push("POST : //events//location");
                                     genRequests();
+
                                 });
                             }
 
                         }else{
                             sendRequest.sendSavedLocation($scope.savedLocation, function(){
-                                $scope.QRcodes = Math.floor((Math.random()*4) + 1);
                                 genRequests();
                             } )
                         }

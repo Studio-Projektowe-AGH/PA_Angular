@@ -16,7 +16,7 @@ angular.module('requestService', ['generatorService'])
         var config = function (url) {
             return configuration = {
                 method: 'POST',
-                url: url,
+                url: "http://goparty-gateway.herokuapp.com" + url,
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                 transformRequest: function (obj) {
                     var str = [];
