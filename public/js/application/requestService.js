@@ -30,13 +30,15 @@ angular.module('requestService', ['generatorService'])
 
         function getUser(callback) {
             $http.get("https://goparty-gateway.herokuapp.com"+ "/test/token/random").success(function(response){
-               callback(response.data.access_token);
+              alert(JSON.stringify(response));
+               callback(response.access_token);
             })
         }
 
         function getLocalIDList(callback) {
             $http.get("https://goparty-gateway.herokuapp.com" + "/profiles/business/all").success(function(response){
-                callback(response.data.localIDlist);
+                alert(JSON.stringify(response));
+                callback(response.localIDlist);
             })
         }
 
