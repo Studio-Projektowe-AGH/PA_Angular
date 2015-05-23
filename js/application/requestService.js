@@ -29,7 +29,7 @@ angular.module('requestService', ['generatorService'])
         };
 
         function getUser(callback) {
-            $http.get("/test/user").success(function(response){
+            $http.get("/test/token/random").success(function(response){
                callback(response.data.access_token);
             })
         }

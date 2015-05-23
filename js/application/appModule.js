@@ -4,7 +4,7 @@
 angular.module('goAppSim', ['requestService'])
     .controller('appCtrl', ['$scope', '$rootScope', '$http', 'sendRequest',
         function ($scope, $rootScope, $http, sendRequest) {
-            $scope.title = "goParty UserSimulator";
+            $scope.title = "goParty UserSimulator2";
             $scope.clubList = [];
             $scope.QRcodes = 0;
             $scope.nowLocation = null;
