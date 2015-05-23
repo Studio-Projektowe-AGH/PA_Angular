@@ -29,13 +29,13 @@ angular.module('requestService', ['generatorService'])
         };
 
         function getUser(callback) {
-            $http.get("/test/token/random").success(function(response){
+            $http.get("http://goparty-gateway.herokuapp.com"+ "/test/token/random").success(function(response){
                callback(response.data.access_token);
             })
         }
 
         function getLocalIDList(callback) {
-            $http.get("/profiles/business/all").success(function(response){
+            $http.get("http://goparty-gateway.herokuapp.com" + "/profiles/business/all").success(function(response){
                 callback(response.data.localIDlist);
             })
         }
