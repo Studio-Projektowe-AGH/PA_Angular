@@ -16,7 +16,7 @@ angular.module('requestService', ['generatorService'])
         var config = function (url) {
             return configuration = {
                 method: 'POST',
-                url: "http://goparty-gateway.herokuapp.com" + url,
+                url: "https://goparty-gateway.herokuapp.com" + url,
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                 transformRequest: function (obj) {
                     var str = [];
@@ -29,13 +29,13 @@ angular.module('requestService', ['generatorService'])
         };
 
         function getUser(callback) {
-            $http.get("http://goparty-gateway.herokuapp.com"+ "/test/token/random").success(function(response){
+            $http.get("https://goparty-gateway.herokuapp.com"+ "/test/token/random").success(function(response){
                callback(response.data.access_token);
             })
         }
 
         function getLocalIDList(callback) {
-            $http.get("http://goparty-gateway.herokuapp.com" + "/profiles/business/all").success(function(response){
+            $http.get("https://goparty-gateway.herokuapp.com" + "/profiles/business/all").success(function(response){
                 callback(response.data.localIDlist);
             })
         }
