@@ -30,7 +30,7 @@ angular.module('requestService', ['generatorService'])
 
         function getUser(callback) {
             $http.get("https://goparty-gateway.herokuapp.com"+ "/test/token/random").success(function(response){
-              alert(JSON.stringify(response));
+              alert(JSON.stringify(response.access_token));
                callback(response.access_token);
             })
         }
