@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>goParty User Simulatror</title>
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css/bootstrap.css")"/>
+    <script src="@routes.Assets.versioned("js/angular.js")"></script>
+    <script src="@routes.Assets.versioned("js/bootstrap.js")"></script>
+</head>
+<body ng-app = "goAppSim" ng-controller="appCtrl">
+<div class="text-center">
+    <div class="jumbotron">
+        <h1 class="h1 text-center text-info">{{title}}</h1>
+    </div>
+    <div class="btn-group-lg">
+        <button class="btn btn-primary " ng-show = "!active" ng-click="startSimulation()">Start simulation</button>
+        <button class="btn btn-danger " ng-click="stopItem = !stopItem">Stop simulation</button>
+    </div>
+<br/>
+    <table class="table  table-hover">
+        <tr class="alert-info">
+            <th >Requests</th>
+            <th></th>
+        </tr>
+        <tr ng-repeat="request in requestTable">
+            <td>{{request}}</td>
+        </tr>
+    </table>
+
+</div>
+<script src="@routes.Assets.versioned("js/application/appModule.js")"></script>
+<script src="@routes.Assets.versioned("js/application/requestService.js")"></script>
+<script src="@routes.Assets.versioned("js/application/generatorService.js")"></script>
+</body>
+</html>
