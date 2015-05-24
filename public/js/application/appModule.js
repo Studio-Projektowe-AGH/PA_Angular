@@ -2,8 +2,8 @@
  * Created by Dominika on 2015-05-21.
  */
 angular.module('goAppSim', ['requestService'])
-    .controller('appCtrl', ['$scope', '$rootScope', '$http', 'sendRequest',
-        function ($scope, $rootScope, $http, sendRequest) {
+    .controller('appCtrl', ['$scope', '$rootScope', '$http', '$interval', 'sendRequest',
+        function ($scope, $rootScope, $http, $interval, sendRequest) {
             $scope.title = "goParty UserSimulator2";
             $scope.clubList = [];
             $scope.QRcodes = 0;
@@ -17,9 +17,8 @@ angular.module('goAppSim', ['requestService'])
             $scope.startSimulation = function () {
                 $scope.active = true;
                 sendRequest.getUser(function (token) {
-                    $scope.access_token = token;
+                    $rootScope.access_token = token;
                     sendRequest.getLocalIDList(function (ClubList) {
-                        $http.defaults.headers.common['Authorization'] = "Bearer " + $scope.access_token;
                         $scope.clubList = ClubList;
                         intervalLocation();
                     });
@@ -62,16 +61,25 @@ angular.module('goAppSim', ['requestService'])
                                                     genRequests();
                                                 });
                                             }
+                                        },
+                                        function(){
+                                            $scope.stopItem = true;
+                                            $scope.title += "\n Wystąpił błąd";
                                         });
                                     })
                                 })
                             }else{
+                                alert("Send location!");
                                 sendRequest.sendLocation(function (location) {
                                     $scope.savedLocation = location;
                                     $scope.requestTable.push("POST : //events//location");
                                     genRequests();
 
-                                });
+                                },
+                                    function(){
+                                        $scope.stopItem = true;
+                                        $scope.title += "\n Wystąpił błąd";
+                                    });
                             }
 
                         }else{

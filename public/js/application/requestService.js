@@ -17,11 +17,12 @@ angular.module('requestService', ['generatorService'])
             return configuration = {
                 method: 'POST',
                 url: "https://goparty-gateway.herokuapp.com" + url,
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                headers: {'Content-Type': 'application/x-www-form-urlencoded',
+                                     'Authorization' : "Bearer " + $rootScope.access_token },
                 transformRequest: function (obj) {
                     var str = [];
                     for (var p in obj) {
-                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(p[i]));
+                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
                         return str.join("&");
                     }
                 }
@@ -30,86 +31,90 @@ angular.module('requestService', ['generatorService'])
 
         function getUser(callback) {
             $http.get("https://goparty-gateway.herokuapp.com"+ "/test/token/random").success(function(response){
-              alert(JSON.stringify(response.access_token));
+              //alert(JSON.stringify(response.access_token));
                callback(response.access_token);
             })
         }
 
         function getLocalIDList(callback) {
             $http.get("https://goparty-gateway.herokuapp.com" + "/profiles/business/all").success(function(response){
-                alert(JSON.stringify(response));
+                //alert(JSON.stringify(response));
                 callback(response.clubsIds);
             })
         }
 
-        function sendLocation(callback) {
+        function sendLocation(callback, callbackFailure) {
             //tu moze byc /events/location/ <- sprawdzic jesli wystapi blad
-            var location = generator.getLocation();
-            var config = config("/events/location");
-            config.data = {
+            var location = generator.genLocation();
+            var configItem = config("/events/location");
+            configItem.data = {
                 Timestamp: generator.getNowTimeStamp(),
                 Location_x: location[0],
                 Location_y: location[1]
             };
 
-            $http(config).success(function (data) {
+            $http(configItem).success(function (data) {
                 callback(location);
+            }).error(function(response){
+                callbackFailure();
             });
 
         }
 
         function sendSavedLocation(location, callback) {
-            var config = config("/events/location");
-            config.data = {
+            var configItem = config("/events/location");
+            configItem.data = {
                 Timestamp: generator.getNowTimeStamp(),
                 Location_x: location[0],
                 Location_y: location[1]
             };
 
-            $http(config).success(function (data) {
+            $http(configItem).success(function (data) {
                 callback(location);
+            }).error(function(response){
+                alert("Blad : ");
             });
         }
 
         function sendCheckIn(clubid, callback) {
-            var config = config("/events/checkin");
-            config.data = {
+            var configItem = config("/events/checkin");
+            configItem.data = {
                 Timestamp: generator.getNowTimeStamp(),
                 ClubId: clubid
             };
 
-            $http(config).success(callback);
+            $http(configItem).success(callback);
         }
 
         function sendCheckOut(clubid, callback) {
-            var config = config("/events/chceckout");
-            config.data = {
+            var configItem = config("/events/chceckout");
+            configItem.data = {
                 Timestamp: generator.getNowTimeStamp(),
                 ClubId: clubid
             };
 
-            $http(config).success(callback);
+            $http(configItem).success(callback);
         }
 
         function sendQRCode(clubid, callback) {
-            var config = config("/events/qrscan");
-            config.data = {
+            var configItem = config("/events/qrscan");
+            configItem.data = {
                 Timestamp: generator.getNowTimeStamp(),
                 ClubId: clubid
             };
 
-            $http(config).success(callback);
+            $http(configItem).success(callback);
         }
 
         function sendRate(clubid, callback) {
-            var config = config("/events/checkin");
-            config.data = {
+            var configItem = config("/events/checkin");
+            configItem.data = {
                 Timestamp: generator.getNowTimeStamp(),
                 ClubId: clubid,
                 Rating: generator.genRate()
             };
 
-            $http(config).success(callback);
+            $http(configItem).success(callback);
         }
 
         return service;
