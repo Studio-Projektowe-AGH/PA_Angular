@@ -18,8 +18,8 @@ angular.module('goAppSim', ['requestService'])
                 $scope.active = true;
                 sendRequest.getUser(function (token) {
                     $scope.access_token = token;
-                    $http.defaults.headers.common['Authorization'] = "Bearer " + $scope.access_token;
                     sendRequest.getLocalIDList(function (ClubList) {
+                        $http.defaults.headers.common['Authorization'] = "Bearer " + $scope.access_token;
                         $scope.clubList = ClubList;
                         intervalLocation();
                     });

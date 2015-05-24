@@ -38,7 +38,7 @@ angular.module('requestService', ['generatorService'])
         function getLocalIDList(callback) {
             $http.get("https://goparty-gateway.herokuapp.com" + "/profiles/business/all").success(function(response){
                 alert(JSON.stringify(response));
-                callback(response.localIDlist);
+                callback(response.clubsIds);
             })
         }
 
