@@ -40,9 +40,9 @@ angular.module('generatorService', [])
 
         function genLocation() {
             var location = [];
-            location[0] = Math.floor((Math.random()*10) + 1);
-            location[1] = Math.floor((Math.random()*10 ) + 1);
-            alert(location);
+            location[0] = Math.floor((Math.random()*100) + 1);
+            location[1] = Math.floor((Math.random()*100) + 1);
+            alert("Send location : " + location);
             return location;
         }
 

@@ -3,7 +3,7 @@
  */
 angular.module('goAppSim', ['requestService'])
     .controller('appCtrl', ['$scope', '$rootScope', '$http', '$interval', 'sendRequest',
-        function ($scope, $rootScope, $http, $interval, sendRequest) {
+        function ($scope, $rootScope, $http,  $interval, sendRequest) {
             $scope.title = "goParty UserSimulator2";
             $scope.clubList = [];
             $scope.QRcodes = 0;
@@ -15,11 +15,15 @@ angular.module('goAppSim', ['requestService'])
             $scope.requestTable = [];
 
             $scope.startSimulation = function () {
+                //$httpProvider.defaults.useXDomain = true;
                 $scope.active = true;
                 sendRequest.getUser(function (token) {
+                    $scope.requestTable.push("Get token : " + token);
                     $rootScope.access_token = token;
                     sendRequest.getLocalIDList(function (ClubList) {
                         $scope.clubList = ClubList;
+                        $scope.requestTable.push("Get Club List ");
+                        $http.defaults.headers.common['Authorization'] = 'Bearer ' + $rootScope.access_token;
                         intervalLocation();
                     });
                 });
@@ -69,10 +73,9 @@ angular.module('goAppSim', ['requestService'])
                                     })
                                 })
                             }else{
-                                alert("Send location!");
                                 sendRequest.sendLocation(function (location) {
                                     $scope.savedLocation = location;
-                                    $scope.requestTable.push("POST : //events//location");
+                                    $scope.requestTable.push("POST : //events//location    -> location params : " + location );
                                     genRequests();
 
                                 },
@@ -91,7 +94,7 @@ angular.module('goAppSim', ['requestService'])
                     } else {
                         $scope.stopSimulation();
                     }
-                }, 6000);
+                }, 3000);
             };
 
             var genRequests = function () {

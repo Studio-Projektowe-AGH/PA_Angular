@@ -18,7 +18,7 @@ angular.module('requestService', ['generatorService'])
                 method: 'POST',
                 url: "https://goparty-gateway.herokuapp.com" + url,
                 headers: {'Content-Type': 'application/x-www-form-urlencoded',
-                                     'Authorization' : "Bearer " + $rootScope.access_token },
+                                     'Auth-Token' : "Bearer " + $rootScope.access_token },
                 transformRequest: function (obj) {
                     var str = [];
                     for (var p in obj) {
