@@ -23,7 +23,7 @@ angular.module('goAppSim', ['requestService'])
                     sendRequest.getLocalIDList(function (ClubList) {
                         $scope.clubList = ClubList;
                         $scope.requestTable.push("Get Club List ");
-                        $http.defaults.headers.common['Authorization'] = 'Bearer ' + $rootScope.access_token;
+                        //$http.defaults.headers.common['Authorization'] = 'Bearer ' + $rootScope.access_token;
                         intervalLocation();
                     });
                 });

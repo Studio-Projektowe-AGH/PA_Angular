@@ -19,7 +19,8 @@ angular.module('requestService', ['generatorService'])
                 url: "https://goparty-gateway.herokuapp.com" + url,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept' : 'text/plain',
+                    'Authorization' : 'Bearer ' + $rootScope.access_token
                 },
                 data : angular.toJson(data),
                 //headers: {'Content-Type': 'application/x-www-form-urlencoded'},
