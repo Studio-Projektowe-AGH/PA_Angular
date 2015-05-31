@@ -52,9 +52,9 @@ angular.module('requestService', ['generatorService'])
             //tu moze byc /events/location/ <- sprawdzic jesli wystapi blad
             var location = generator.genLocation();
             var data = {
-                Timestamp: generator.getNowTimeStamp(),
-                Location_x: location[0],
-                Location_y: location[1]
+                timestamp: generator.getNowTimeStamp(),
+                longitude: location[0],
+                latitude: location[1]
             };
             var configItem = config("/events/location", data);
 
@@ -68,9 +68,9 @@ angular.module('requestService', ['generatorService'])
 
         function sendSavedLocation(location, callback) {
            var data = {
-                Timestamp: generator.getNowTimeStamp(),
-                Location_x: location[0],
-                Location_y: location[1]
+                timestamp: generator.getNowTimeStamp(),
+                longitude: location[0],
+                latitude: location[1]
             };
             var configItem = config("/events/location", data);
 
@@ -83,8 +83,8 @@ angular.module('requestService', ['generatorService'])
 
         function sendCheckIn(clubid, callback) {
             var data = {
-                Timestamp: generator.getNowTimeStamp(),
-                ClubId: clubid
+                timestamp: generator.getNowTimeStamp(),
+                clubId: clubid
             };
             var configItem = config("/events/checkin", data);
             $http(configItem).success(callback);
@@ -92,8 +92,8 @@ angular.module('requestService', ['generatorService'])
 
         function sendCheckOut(clubid, callback) {
             var data = {
-                Timestamp: generator.getNowTimeStamp(),
-                ClubId: clubid
+                timestamp: generator.getNowTimeStamp(),
+                clubId: clubid
             };
             var configItem = config("/events/chceckout", data);
 
@@ -102,8 +102,9 @@ angular.module('requestService', ['generatorService'])
 
         function sendQRCode(clubid, callback) {
             var data = {
-                Timestamp: generator.getNowTimeStamp(),
-                ClubId: clubid
+                timepstamp: generator.getNowTimeStamp(),
+                clubId: clubid,
+                payload: "1021001opopop"
             };
             var configItem = config("/events/qrscan", data);
             $http(configItem).success(callback);
@@ -111,11 +112,11 @@ angular.module('requestService', ['generatorService'])
 
         function sendRate(clubid, callback) {
             var data = {
-                Timestamp: generator.getNowTimeStamp(),
-                ClubId: clubid,
-                Rating: generator.genRate()
+                timestamp: generator.getNowTimeStamp(),
+                clubId: clubid,
+                rating: generator.genRate()
             };
-            var configItem = config("/events/checkin", data);
+            var configItem = config("/events/rating", data);
             $http(configItem).success(callback);
         }
         return service;
