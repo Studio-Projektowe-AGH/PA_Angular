@@ -2,7 +2,7 @@
  * Created by Dominika on 2015-05-21.
  */
 angular.module('requestService', ['generatorService'])
-    .service('sendRequest', ['$rootScope','$http', 'generator', function ($rootScope, $http, generator) {
+    .service('sendRequest', ['$rootScope', '$http', 'generator', function ($rootScope, $http, generator) {
         var service = {};
         service.getUser = getUser;
         service.getLocalIDList = getLocalIDList;
@@ -13,12 +13,17 @@ angular.module('requestService', ['generatorService'])
         service.sendQRCode = sendQRCode;
         service.sendRate = sendRate;
 
-        var config = function (url) {
+        var config = function (url, data) {
             return configuration = {
                 method: 'POST',
                 url: "https://goparty-gateway.herokuapp.com" + url,
-                headers: {'Content-Type': 'application/x-www-form-urlencoded',
-                                     'Auth-Token' : "Bearer " + $rootScope.access_token },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                data : angular.toJson(data),
+                //headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                //'Auth-Token' : "Bearer " + $rootScope.access_token },
                 transformRequest: function (obj) {
                     var str = [];
                     for (var p in obj) {
@@ -30,14 +35,14 @@ angular.module('requestService', ['generatorService'])
         };
 
         function getUser(callback) {
-            $http.get("https://goparty-gateway.herokuapp.com"+ "/test/token/random").success(function(response){
-              //alert(JSON.stringify(response.access_token));
-               callback(response.access_token);
+            $http.get("https://goparty-gateway.herokuapp.com" + "/test/token/random").success(function (response) {
+                //alert(JSON.stringify(response.access_token));
+                callback(response.access_token);
             })
         }
 
         function getLocalIDList(callback) {
-            $http.get("https://goparty-gateway.herokuapp.com" + "/profiles/business/all").success(function(response){
+            $http.get("https://goparty-gateway.herokuapp.com" + "/profiles/business/all").success(function (response) {
                 //alert(JSON.stringify(response));
                 callback(response.clubsIds);
             })
@@ -46,76 +51,72 @@ angular.module('requestService', ['generatorService'])
         function sendLocation(callback, callbackFailure) {
             //tu moze byc /events/location/ <- sprawdzic jesli wystapi blad
             var location = generator.genLocation();
-            var configItem = config("/events/location");
-            configItem.data = {
+            var data = {
                 Timestamp: generator.getNowTimeStamp(),
                 Location_x: location[0],
                 Location_y: location[1]
             };
+            var configItem = config("/events/location", data);
 
             $http(configItem).success(function (data) {
                 callback(location);
-            }).error(function(response){
+            }).error(function (response) {
                 callbackFailure();
             });
 
         }
 
         function sendSavedLocation(location, callback) {
-            var configItem = config("/events/location");
-            configItem.data = {
+           var data = {
                 Timestamp: generator.getNowTimeStamp(),
                 Location_x: location[0],
                 Location_y: location[1]
             };
+            var configItem = config("/events/location", data);
 
             $http(configItem).success(function (data) {
                 callback(location);
-            }).error(function(response){
+            }).error(function (response) {
                 alert("Blad : ");
             });
         }
 
         function sendCheckIn(clubid, callback) {
-            var configItem = config("/events/checkin");
-            configItem.data = {
+            var data = {
                 Timestamp: generator.getNowTimeStamp(),
                 ClubId: clubid
             };
-
+            var configItem = config("/events/checkin", data);
             $http(configItem).success(callback);
         }
 
         function sendCheckOut(clubid, callback) {
-            var configItem = config("/events/chceckout");
-            configItem.data = {
+            var data = {
                 Timestamp: generator.getNowTimeStamp(),
                 ClubId: clubid
             };
+            var configItem = config("/events/chceckout", data);
 
             $http(configItem).success(callback);
         }
 
         function sendQRCode(clubid, callback) {
-            var configItem = config("/events/qrscan");
-            configItem.data = {
+            var data = {
                 Timestamp: generator.getNowTimeStamp(),
                 ClubId: clubid
             };
-
+            var configItem = config("/events/qrscan", data);
             $http(configItem).success(callback);
         }
 
         function sendRate(clubid, callback) {
-            var configItem = config("/events/checkin");
-            configItem.data = {
+            var data = {
                 Timestamp: generator.getNowTimeStamp(),
                 ClubId: clubid,
                 Rating: generator.genRate()
             };
-
+            var configItem = config("/events/checkin", data);
             $http(configItem).success(callback);
         }
-
         return service;
     }]);
