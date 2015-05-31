@@ -7,7 +7,6 @@ angular.module('requestService', ['generatorService'])
         service.getUser = getUser;
         service.getLocalIDList = getLocalIDList;
         service.sendLocation = sendLocation;
-        service.sendSavedLocation = sendSavedLocation;
         service.sendCheckIn = sendCheckIn;
         service.sendCheckOut = sendCheckOut;
         service.sendQRCode = sendQRCode;
@@ -19,19 +18,10 @@ angular.module('requestService', ['generatorService'])
                 url: "https://goparty-gateway.herokuapp.com" + url,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept' : 'text/plain',
-                    'Authorization' : 'Bearer ' + $rootScope.access_token
+                    'Accept': 'text/plain',
+                    'Authorization': 'Bearer ' + $rootScope.access_token
                 },
-                data : angular.toJson(data),
-                //headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                //'Auth-Token' : "Bearer " + $rootScope.access_token },
-                transformRequest: function (obj) {
-                    var str = [];
-                    for (var p in obj) {
-                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-                        return str.join("&");
-                    }
-                }
+                data: angular.toJson(data)
             };
         };
 
@@ -49,42 +39,25 @@ angular.module('requestService', ['generatorService'])
             })
         }
 
-        function sendLocation(callback, callbackFailure) {
-            //tu moze byc /events/location/ <- sprawdzic jesli wystapi blad
-            var location = generator.genLocation();
+        function sendLocation(location, callback, callbackFailure) {
             var data = {
-                timestamp: generator.getNowTimeStamp(),
+                timestamp: $rootScope.savedTime,
                 longitude: location[0],
                 latitude: location[1]
             };
             var configItem = config("/events/location", data);
-
+            var timer = 1000;
             $http(configItem).success(function (data) {
-                callback(location);
+                callback(location, timer);
             }).error(function (response) {
                 callbackFailure();
             });
 
         }
 
-        function sendSavedLocation(location, callback) {
-           var data = {
-                timestamp: generator.getNowTimeStamp(),
-                longitude: location[0],
-                latitude: location[1]
-            };
-            var configItem = config("/events/location", data);
-
-            $http(configItem).success(function (data) {
-                callback(location);
-            }).error(function (response) {
-                alert("Blad : ");
-            });
-        }
-
         function sendCheckIn(clubid, callback) {
             var data = {
-                timestamp: generator.getNowTimeStamp(),
+                timestamp:  $rootScope.savedTime,
                 clubId: clubid
             };
             var configItem = config("/events/checkin", data);
@@ -93,19 +66,18 @@ angular.module('requestService', ['generatorService'])
 
         function sendCheckOut(clubid, callback) {
             var data = {
-                timestamp: generator.getNowTimeStamp(),
+                timestamp:  $rootScope.savedTime,
                 clubId: clubid
             };
-            var configItem = config("/events/chceckout", data);
+            var configItem = config("/events/checkout", data);
 
             $http(configItem).success(callback);
         }
 
         function sendQRCode(clubid, callback) {
             var data = {
-                timepstamp: generator.getNowTimeStamp(),
-                clubId: clubid,
-                payload: "1021001opopop"
+                timestamp:  $rootScope.savedTime,
+                payload: " {  clubId: "+  clubid + ", code:  1021001opopop} "
             };
             var configItem = config("/events/qrscan", data);
             $http(configItem).success(callback);
@@ -113,7 +85,7 @@ angular.module('requestService', ['generatorService'])
 
         function sendRate(clubid, callback) {
             var data = {
-                timestamp: generator.getNowTimeStamp(),
+                timestamp:  $rootScope.savedTime,
                 clubId: clubid,
                 rating: generator.genRate()
             };

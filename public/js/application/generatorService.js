@@ -8,6 +8,7 @@ angular.module('generatorService', [])
         service.genTimeStamp = genTimeStamp;
         service.genRate = genRate;
         service.genLocation = genLocation;
+        service.genTime = genTime;
 
         function getNowTimeStamp() {
             //var nowDate = nowDate || new Date();
@@ -44,6 +45,15 @@ angular.module('generatorService', [])
             location[1] = Math.floor((Math.random()*100) + 1);
             alert("Send location : " + location);
             return location;
+        }
+
+        function genTime(){
+            var startDate = new Date(2015, 0, 1);
+            var endDate = new Date();
+
+            return new Date(startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())) / 1000;
+
+
         }
 
         return service;
