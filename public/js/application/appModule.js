@@ -53,12 +53,16 @@ angular.module('goAppSim', ['requestService', 'generatorService'])
                     if ($scope.stopItem != true) {
                         sendLocation($scope.nowLocation, function () {
                             //czy twoja lokalizacja to club ?
-                            if (genBoolean()) {
-                                $scope.savedClubID = genClub();
-                                sendRequest.sendCheckIn($scope.savedClubID, function () {
-                                    $scope.requestTable.push(getObject("POST : //events//checkin" + "   CLUB ID : " + $scope.savedClubID));
+                            if (genBoolean() || $scope.savedClubID != null) {
+                                if($scope.savedClubID != null){
                                     goClubbing();
-                                });
+                                }else{
+                                    $scope.savedClubID = genClub();
+                                    sendRequest.sendCheckIn($scope.savedClubID, function () {
+                                        $scope.requestTable.push(getObject("POST : //events//checkin" + "   CLUB ID : " + $scope.savedClubID));
+                                        goClubbing();
+                                    });
+                                }
                             } else {
                                 //zmien lokalizacje
                                 $scope.nowLocation = generator.genLocation();
@@ -94,9 +98,10 @@ angular.module('goAppSim', ['requestService', 'generatorService'])
                 }
                 for (var i = 0; i < $scope.QRcodes; i++) {
 
-                        sendRequest.sendQRCode(genClub(), function () {
+                        sendRequest.sendQRCode(genClub(), function (time) {
                             $scope.QRcodes--;
-                            $scope.requestTable.push("POST : //events//qrscan  " + "   TIME : " + $rootScope.savedTime);
+                                $scope.requestTable.push(getObject("POST : //events//qrscan  " + "   TIME : " + time));
+
                             if ($scope.QRcodes == 0) {
                                 //zostan w klubie?
                                 if (!genBoolean()) {
@@ -127,8 +132,8 @@ angular.module('goAppSim', ['requestService', 'generatorService'])
             var leaveClub = function () {
                 sendRequest.sendCheckOut($scope.savedClubID, function () {
                     $scope.requestTable.push(getObject("POST : //events//checkout" + "      CLUB ID: " + $scope.savedClubID));
-                    sendRequest.sendRate($scope.savedClubID, function () {
-                        $scope.requestTable.push(getObject("POST : //events//rate"));
+                    sendRequest.sendRate($scope.savedClubID, function (rating) {
+                        $scope.requestTable.push(getObject("POST : //events//rate       ->RATEING : " +rating ));
                         $scope.savedClubID = null;
                         $scope.savedLocation = null;
                         $scope.nowLocation = generator.genLocation();
@@ -156,24 +161,6 @@ angular.module('goAppSim', ['requestService', 'generatorService'])
                 $scope.requestTable.length = 0;
                 $scope.id = 0;
                 $scope.clearShow=false;
-            };
-            var genRequests = function () {
-                var times = $scope.QRcodes;
-                var req = [];
-
-                for (var i = 0; i < times; i++) {
-                    //req.push(sendQR);
-
-                    sendRequest.sendQRCode(genClub(), function () {
-                            $scope.QRcodes--;
-                            $scope.$apply(function () {
-                                $scope.requestTable.push("POST : //events//qrscan  " + "   TIME : " + $rootScope.savedTime);
-                            });
-
-                        }
-                    )
-                }
-                //$q.all(req);
             };
 
             function genBoolean() {

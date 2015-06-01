@@ -52,7 +52,6 @@ angular.module('requestService', ['generatorService'])
             }).error(function (response) {
                 callbackFailure();
             });
-
         }
 
         function sendCheckIn(clubid, callback) {
@@ -77,23 +76,25 @@ angular.module('requestService', ['generatorService'])
         }
 
         function sendQRCode(clubid, callback) {
-            $rootScope.savedTime += 1000;
+            $rootScope.savedTime + 1000;
+            time = $rootScope.savedTime;
             var data = {
                 timestamp:  $rootScope.savedTime,
                 payload: " {  clubId: "+  clubid + ", code:  1021001opopop} "
             };
             var configItem = config("/events/qrscan", data);
-            $http(configItem).success(callback);
+            $http(configItem).success(callback(time));
         }
 
         function sendRate(clubid, callback) {
+            var rating = generator.genRate();
             var data = {
                 timestamp:  $rootScope.savedTime,
                 clubId: clubid,
-                rating: generator.genRate()
+                rating: rating
             };
             var configItem = config("/events/rating", data);
-            $http(configItem).success(callback);
+            $http(configItem).success(callback(rating));
         }
         return service;
     }]);

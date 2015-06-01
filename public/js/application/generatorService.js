@@ -49,10 +49,7 @@ angular.module('generatorService', [])
         function genTime(){
             var startDate = new Date(2015, 0, 1);
             var endDate = new Date();
-
             return new Date(startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())) / 1000;
-
-
         }
 
         return service;
