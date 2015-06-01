@@ -8,8 +8,8 @@ angular.module('goAppSim', ['requestService', 'generatorService'])
         $httpProvider.defaults.headers.put = {};
         $httpProvider.defaults.headers.patch = {};
     }])
-    .controller('appCtrl', ['$scope', '$rootScope', '$http', '$q', '$interval', 'sendRequest', 'generator',
-        function ($scope, $rootScope, $http, $q, $interval, sendRequest, generator) {
+    .controller('appCtrl', ['$scope', '$rootScope', '$http', '$q', '$interval', '$timeout', 'sendRequest', 'generator',
+        function ($scope, $rootScope, $http, $q, $interval, $timeout, sendRequest, generator) {
             $scope.title = "goParty UserSimulator2";
             $scope.clubList = [];
             $scope.QRcodes = 0;
@@ -19,6 +19,7 @@ angular.module('goAppSim', ['requestService', 'generatorService'])
             $rootScope.savedTime = generator.genTime();
 
             $scope.active = false;
+            $scope.clearShow = false;
             $scope.stopItem = false;
             $scope.requestTable = [];
             $scope.id = 0;
@@ -39,71 +40,88 @@ angular.module('goAppSim', ['requestService', 'generatorService'])
                         $scope.clubList = ClubList;
                         $scope.requestTable.push(getObject("Get Club List "));
                         $scope.nowLocation = generator.genLocation();
-                            seqIntervalLocation();
-                        //intervalLocation();
+                        seqIntervalLocation();
                     });
                 });
             };
 
-            $scope.stopSimulation = function () {
-                if (angular.isDefined(stop)) {
-                    $interval.cancel(stop);
-                    stop = undefined;
-                    $scope.requestTable.length = 0;
-                    $scope.active = false;
-                    $scope.title = "goParty UserSimulator2";
-                    $scope.clubList = [];
-                    $scope.QRcodes = 0;
-                    $scope.nowLocation = null;
-                    $scope.savedLocation = null;
-                }
-            };
             var stop;
             var seqIntervalLocation = function () {
-                if(angular.isDefined(stop)) return;
+                if (angular.isDefined(stop)) return;
 
-                stop = $interval(function(){
-                    if($scope.stopItem != true){
-                        sendLocation($scope.nowLocation);
-                        //czy twoja lokalizacja to club ?
-                        if (genBoolean()) {
-                            $scope.savedClubID = genClub();
-                            sendRequest.sendCheckIn($scope.savedClubID, function () {
-                                $scope.requestTable.push(getObject("POST : //events//checkin" + "   CLUB ID : " + $scope.savedClubID));
-                                goClubbing();
-                            });
-                        } else {
-                            //zmien lokalizacje
-                            $scope.nowLocation = generator.genLocation();
-                        }
-                    }else {
+                stop = $interval(function () {
+                    if ($scope.stopItem != true) {
+                        sendLocation($scope.nowLocation, function () {
+                            //czy twoja lokalizacja to club ?
+                            if (genBoolean()) {
+                                $scope.savedClubID = genClub();
+                                sendRequest.sendCheckIn($scope.savedClubID, function () {
+                                    $scope.requestTable.push(getObject("POST : //events//checkin" + "   CLUB ID : " + $scope.savedClubID));
+                                    goClubbing();
+                                });
+                            } else {
+                                //zmien lokalizacje
+                                $scope.nowLocation = generator.genLocation();
+                            }
+
+                        });
+
+                    } else {
                         $scope.stopSimulation();
                     }
-                }, 3000);
+                }, 6000);
 
             };
 
-            var goClubbing = function(){
+            var sendLocation = function (location, callback) {
+                sendRequest.sendLocation(location, function (location, timer) {
+                        $scope.savedLocation = location;
+                        $rootScope.savedTime = $rootScope.savedTime + timer;
+                        $scope.requestTable.push(getObject("POST : //events//location    -> LOCATION PARAMS : " + location + "   TIME : " + $rootScope.savedTime));
+                        callback();
+                    },
+                    function () {
+                        $scope.stopItem = true;
+                        $scope.title += "\n Wystąpił błąd";
+                    });
+            };
+
+            var goClubbing = function () {
                 //terazniejsza lokalizacja jest klubem
                 $scope.savedLocation = $scope.nowLocation;
-              if($scope.QRcodes == 0){
-                  $scope.QRcodes = Math.floor((Math.random() * 4) + 1);
-              }
-                for(var i = 0; i < $scope.QRcodes; i++){
-                    sendRequest.sendQRCode(genClub(), function () {
+                if ($scope.QRcodes == 0) {
+                    $scope.QRcodes = Math.floor((Math.random() * 4) + 1);
+                }
+                for (var i = 0; i < $scope.QRcodes; i++) {
+
+                        sendRequest.sendQRCode(genClub(), function () {
                             $scope.QRcodes--;
                             $scope.requestTable.push("POST : //events//qrscan  " + "   TIME : " + $rootScope.savedTime);
-
-                            if($scope.QRcodes == 0){
+                            if ($scope.QRcodes == 0) {
                                 //zostan w klubie?
-                                if(!genBoolean()){
-                                   leaveClub();
+                                if (!genBoolean()) {
+                                    leaveClub();
                                 }
                             }
+                        } );
 
-                        }
-                    )
                 }
+            };
+
+            var sendQR = function () {
+                var deferred = $q.defer();
+                $timeout(function(){
+                    deferred.resolve(function () {
+                        sendRequest.sendQRCode(genClub(), function () {
+                            $scope.QRcodes--;
+                            $rootScope.savedTime = $rootScope.savedTime + 1000;
+                            return $scope.requestTable.push("POST : //events//qrscan  " + "   TIME : " + $rootScope.savedTime);
+                        })
+                    });
+                }, 1000);
+
+
+                return deferred.promise;
             };
 
             var leaveClub = function () {
@@ -118,70 +136,27 @@ angular.module('goAppSim', ['requestService', 'generatorService'])
                 })
             };
 
+            $scope.stopSimulation = function () {
+                if (angular.isDefined(stop)) {
+                    $interval.cancel(stop);
+                    stop = undefined;
+                    //$scope.requestTable.length = 0;
+                    $scope.active = false;
+                    $scope.title = "goParty UserSimulator2";
+                    $scope.clubList = [];
+                    $scope.QRcodes = 0;
+                    $scope.nowLocation = null;
+                    $scope.savedLocation = null;
 
-            //send location request every 6s, do this until stopButton is pressed
-            var intervalLocation = function () {
-                if (angular.isDefined(stop)) return;
-
-                stop = $interval(function () {
-                    if ($scope.stopItem != true) {
-
-                        if ($scope.QRcodes == 0) {
-                            $scope.QRcodes = Math.floor((Math.random() * 4) + 1);
-
-                            alert("Set QRcodes : " + $scope.QRcodes);
-                            if ($scope.savedLocation != null) {
-                                //ewentualnie decyduj czy zostajesz czy wychodzisz
-                                sendRequest.sendCheckOut(function () {
-                                    $scope.requestTable.push(getObject("POST : //events//checkout"));
-                                    sendRequest.sendRate(function () {
-                                        $scope.requestTable.push(getObject("POST : //events//rate"));
-                                        sendRequest.sendLocation(generator.genLocation, function (location, timer) {
-                                                $scope.savedLocation = location;
-                                                $rootScope.savedTime = $rootScope.savedTime + timer;
-                                                $scope.requestTable.push(getObject("POST : //events//location   -> LOCATION PARAMS : " + location + "   TIME : " + $rootScope.savedTime));
-                                                //decide if your location is  equivalent to "club" location
-                                                if (genBoolean()) {
-                                                    $scope.localID = Math.floor((Math.random() * $scope.clubList.length));
-                                                    sendRequest.sendCheckIn($scope.localID, function () {
-                                                        $scope.requestTable.push(getObject("POST : //events//checkin"));
-                                                        genRequests();
-                                                    });
-                                                }
-                                            },
-                                            function () {
-                                                $scope.stopItem = true;
-                                                $scope.title += "\n Wystąpił błąd";
-                                            });
-                                    })
-                                })
-                            } else {
-                                sendLocation(generator.genLocation());
-                            }
-
-                        } else {
-                            sendLocation($scope.savedLocation);
-                        }
-
-                    } else {
-                        $scope.stopSimulation();
-                    }
-                }, 3000);
+                    $scope.clearShow = true;
+                }
             };
 
-            var sendLocation = function (location) {
-                sendRequest.sendLocation(location, function (location, timer) {
-                        $scope.savedLocation = location;
-                        $rootScope.savedTime = $rootScope.savedTime + timer;
-                        $scope.requestTable.push(getObject("POST : //events//location    -> LOCATION PARAMS : " + location + "   TIME : " + $rootScope.savedTime));
-                        genRequests();
-                    },
-                    function () {
-                        $scope.stopItem = true;
-                        $scope.title += "\n Wystąpił błąd";
-                    });
+            $scope.resetList = function(){
+                $scope.requestTable.length = 0;
+                $scope.id = 0;
+                $scope.clearShow=false;
             };
-
             var genRequests = function () {
                 var times = $scope.QRcodes;
                 var req = [];
@@ -191,24 +166,14 @@ angular.module('goAppSim', ['requestService', 'generatorService'])
 
                     sendRequest.sendQRCode(genClub(), function () {
                             $scope.QRcodes--;
-                            $scope.requestTable.push("POST : //events//qrscan  " + "   TIME : " + $rootScope.savedTime);
+                            $scope.$apply(function () {
+                                $scope.requestTable.push("POST : //events//qrscan  " + "   TIME : " + $rootScope.savedTime);
+                            });
+
                         }
                     )
                 }
                 //$q.all(req);
-            };
-
-            var sendQR = function () {
-                var deferred = $q.defer();
-                deferred.resolve(function () {
-                    sendRequest.sendQRCode(genClub(), function () {
-                        $scope.QRcodes--;
-                        $rootScope.savedTime = $rootScope.savedTime + 1000;
-                        $scope.requestTable.push("POST : //events//qrscan  " + "   TIME : " + $rootScope.savedTime);
-                    })
-                });
-
-                return deferred.promise;
             };
 
             function genBoolean() {
@@ -220,5 +185,3 @@ angular.module('goAppSim', ['requestService', 'generatorService'])
                 return $scope.clubList[index];
             }
         }]);
-
-

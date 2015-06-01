@@ -56,6 +56,7 @@ angular.module('requestService', ['generatorService'])
         }
 
         function sendCheckIn(clubid, callback) {
+            $rootScope.savedTime += 1000;
             var data = {
                 timestamp:  $rootScope.savedTime,
                 clubId: clubid
@@ -65,6 +66,7 @@ angular.module('requestService', ['generatorService'])
         }
 
         function sendCheckOut(clubid, callback) {
+            $rootScope.savedTime += 1000;
             var data = {
                 timestamp:  $rootScope.savedTime,
                 clubId: clubid
@@ -75,6 +77,7 @@ angular.module('requestService', ['generatorService'])
         }
 
         function sendQRCode(clubid, callback) {
+            $rootScope.savedTime += 1000;
             var data = {
                 timestamp:  $rootScope.savedTime,
                 payload: " {  clubId: "+  clubid + ", code:  1021001opopop} "
