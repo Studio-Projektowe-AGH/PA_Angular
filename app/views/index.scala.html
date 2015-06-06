@@ -14,7 +14,8 @@
     </div>
     <div class="btn-group-lg">
         <button class="btn btn-primary " ng-show = "!active" ng-click="startSimulation()">Start simulation</button>
-        <button class="btn btn-danger " ng-click="stopItem = !stopItem">Stop simulation</button>
+        <button class="btn btn-danger " ng-click="stopSimulation()">Stop simulation</button>
+        <button class="btn btn-info" ng-show="clearShow" ng-click="resetList()">Clear list</button>
     </div>
 <br/>
     <table class="table  table-hover">
@@ -22,8 +23,9 @@
             <th >Requests</th>
             <th></th>
         </tr>
-        <tr ng-repeat="request in requestTable">
-            <td>{{request}}</td>
+        <tr ng-repeat="request in requestTable track by $index">
+            <td>{{request.id}}</td>
+            <td>{{request.desc}}</td>
         </tr>
     </table>
 
