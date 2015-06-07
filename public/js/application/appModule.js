@@ -97,10 +97,9 @@ angular.module('goAppSim', ['requestService', 'generatorService'])
                     $scope.QRcodes = Math.floor((Math.random() * 4) + 1);
                 }
                 for (var i = 0; i < $scope.QRcodes; i++) {
-
                         sendRequest.sendQRCode(genClub(), function (time) {
                             $scope.QRcodes--;
-                                $scope.requestTable.push(getObject("POST : //events//qrscan  " + "   TIME : " + time));
+                            $scope.requestTable.push(getObject("POST : //events//qrscan  " + "   TIME : " + time));
 
                             if ($scope.QRcodes == 0) {
                                 //zostan w klubie?
@@ -109,7 +108,6 @@ angular.module('goAppSim', ['requestService', 'generatorService'])
                                 }
                             }
                         } );
-
                 }
             };
 
@@ -132,12 +130,15 @@ angular.module('goAppSim', ['requestService', 'generatorService'])
             var leaveClub = function () {
                 sendRequest.sendCheckOut($scope.savedClubID, function () {
                     $scope.requestTable.push(getObject("POST : //events//checkout" + "      -> CLUB ID: " + $scope.savedClubID));
-                    sendRequest.sendRate($scope.savedClubID, function (rating) {
-                        $scope.requestTable.push(getObject("POST : //events//rate       -> RATING : " +rating ));
-                        $scope.savedClubID = null;
-                        $scope.savedLocation = null;
-                        $scope.nowLocation = generator.genLocation();
-                    })
+                    $timeout(function(){
+                        sendRequest.sendRate($scope.savedClubID, function (rating) {
+                            $scope.requestTable.push(getObject("POST : //events//rate       -> RATING : " +rating ));
+                            $scope.savedClubID = null;
+                            $scope.savedLocation = null;
+                            $scope.nowLocation = generator.genLocation();
+                        })
+                    }, 1000);
+
                 })
             };
 
