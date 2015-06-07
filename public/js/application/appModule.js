@@ -59,7 +59,7 @@ angular.module('goAppSim', ['requestService', 'generatorService'])
                                 }else{
                                     $scope.savedClubID = genClub();
                                     sendRequest.sendCheckIn($scope.savedClubID, function () {
-                                        $scope.requestTable.push(getObject("POST : //events//checkin" + "   CLUB ID : " + $scope.savedClubID));
+                                        $scope.requestTable.push(getObject("POST : //events//checkin" + "   -> CLUB ID : " + $scope.savedClubID));
                                         goClubbing();
                                     });
                                 }
@@ -131,9 +131,9 @@ angular.module('goAppSim', ['requestService', 'generatorService'])
 
             var leaveClub = function () {
                 sendRequest.sendCheckOut($scope.savedClubID, function () {
-                    $scope.requestTable.push(getObject("POST : //events//checkout" + "      CLUB ID: " + $scope.savedClubID));
+                    $scope.requestTable.push(getObject("POST : //events//checkout" + "      -> CLUB ID: " + $scope.savedClubID));
                     sendRequest.sendRate($scope.savedClubID, function (rating) {
-                        $scope.requestTable.push(getObject("POST : //events//rate       ->RATEING : " +rating ));
+                        $scope.requestTable.push(getObject("POST : //events//rate       -> RATING : " +rating ));
                         $scope.savedClubID = null;
                         $scope.savedLocation = null;
                         $scope.nowLocation = generator.genLocation();
