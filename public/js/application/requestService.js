@@ -76,7 +76,7 @@ angular.module('requestService', ['generatorService'])
         }
 
         function sendQRCode(clubid, callback) {
-            $rootScope.savedTime + 1000;
+            $rootScope.savedTime + 5000;
             time = $rootScope.savedTime;
             var data = {
                 timestamp:  $rootScope.savedTime,

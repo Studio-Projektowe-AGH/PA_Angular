@@ -51,125 +51,122 @@ angular.module('goAppSim', ['requestService', 'generatorService'])
 
                 stop = $interval(function () {
                     if ($scope.stopItem != true) {
-                        sendLocation($scope.nowLocation, function () {
+                        $rootScope.savedTime += 360000;
                             //czy twoja lokalizacja to club ?
-                            if (genBoolean() || $scope.savedClubID != null) {
-                                if($scope.savedClubID != null){
-                                    goClubbing();
-                                }else{
-                                    $scope.savedClubID = genClub();
-                                    sendRequest.sendCheckIn($scope.savedClubID, function () {
-                                        $scope.requestTable.push(getObject("POST : //events//checkin" + "   -> CLUB ID : " + $scope.savedClubID));
-                                        goClubbing();
-                                    });
-                                }
+                            if ($scope.savedClubID != null) {
+                                goClubbing();
                             } else {
-                                //zmien lokalizacje
-                                $scope.nowLocation = generator.genLocation();
+                                $scope.savedClubID = genClub();
+                                sendRequest.sendCheckIn($scope.savedClubID, function () {
+                                    $scope.requestTable.push(getObject("POST : //events//checkin" + "   -> CLUB ID : " + $scope.savedClubID));
+                                    goClubbing();
+                                });
                             }
+                                //
+                                //if (genBoolean() || $scope.savedClubID != null) {
+                                //    if ($scope.savedClubID != null) {
+                                //        goClubbing();
+                                //    } else {
+                                //        $scope.savedClubID = genClub();
+                                //        sendRequest.sendCheckIn($scope.savedClubID, function () {
+                                //            $scope.requestTable.push(getObject("POST : //events//checkin" + "   -> CLUB ID : " + $scope.savedClubID));
+                                //            goClubbing();
+                                //        });
+                                //    }
+                                //} else {
+                                //    //zmien lokalizacje
+                                //    $scope.nowLocation = generator.genLocation();
+                                //}
 
+                        }
+                    else
+                        {
+                            $scope.stopSimulation();
+                        }
+                    }, 4500);
+
+                };
+
+                var sendLocation = function (location, callback) {
+                    sendRequest.sendLocation(location, function (location, timer) {
+                            $scope.savedLocation = location;
+                            $rootScope.savedTime = $rootScope.savedTime + timer;
+                            $scope.requestTable.push(getObject("POST : //events//location    -> LOCATION PARAMS : " + location + "   TIME : " + $rootScope.savedTime));
+                            callback();
+                        },
+                        function () {
+                            $scope.stopItem = true;
+                            $scope.title += "\n Wystąpił błąd";
                         });
+                };
 
-                    } else {
-                        $scope.stopSimulation();
+                var goClubbing = function () {
+                    //terazniejsza lokalizacja jest klubem
+                    $scope.savedLocation = $scope.nowLocation;
+                    if ($scope.QRcodes == 0) {
+                        $scope.QRcodes = Math.floor((Math.random() * 4) + 1);
                     }
-                }, 6000);
+                    for (var i = 0; i < $scope.QRcodes; i++) {
+                            sendRequest.sendQRCode(genClub(), function (time) {
+                                $scope.QRcodes--;
+                                $scope.requestTable.push(getObject("POST : //events//qrscan  " + "   TIME : " + time));
 
-            };
-
-            var sendLocation = function (location, callback) {
-                sendRequest.sendLocation(location, function (location, timer) {
-                        $scope.savedLocation = location;
-                        $rootScope.savedTime = $rootScope.savedTime + timer;
-                        $scope.requestTable.push(getObject("POST : //events//location    -> LOCATION PARAMS : " + location + "   TIME : " + $rootScope.savedTime));
-                        callback();
-                    },
-                    function () {
-                        $scope.stopItem = true;
-                        $scope.title += "\n Wystąpił błąd";
-                    });
-            };
-
-            var goClubbing = function () {
-                //terazniejsza lokalizacja jest klubem
-                $scope.savedLocation = $scope.nowLocation;
-                if ($scope.QRcodes == 0) {
-                    $scope.QRcodes = Math.floor((Math.random() * 4) + 1);
-                }
-                for (var i = 0; i < $scope.QRcodes; i++) {
-                        sendRequest.sendQRCode(genClub(), function (time) {
-                            $scope.QRcodes--;
-                            $scope.requestTable.push(getObject("POST : //events//qrscan  " + "   TIME : " + time));
-
-                            if ($scope.QRcodes == 0) {
-                                //zostan w klubie?
-                                if (!genBoolean()) {
-                                    leaveClub();
+                                if ($scope.QRcodes == 0) {
+                                    //zostan w klubie?
+                                    if (!genBoolean()) {
+                                        leaveClub();
+                                    }
                                 }
-                            }
-                        } );
-                }
-            };
+                            });
 
-            var sendQR = function () {
-                var deferred = $q.defer();
-                $timeout(function(){
-                    deferred.resolve(function () {
-                        sendRequest.sendQRCode(genClub(), function () {
-                            $scope.QRcodes--;
-                            $rootScope.savedTime = $rootScope.savedTime + 1000;
-                            return $scope.requestTable.push("POST : //events//qrscan  " + "   TIME : " + $rootScope.savedTime);
-                        })
+                    }
+                };
+
+                var leaveClub = function () {
+                    sendRequest.sendRate($scope.savedClubID, function (rating) {
+                        $scope.requestTable.push(getObject("POST : //events//rate       -> RATING : " + rating));
+                        $timeout(function () {
+                            sendRequest.sendCheckOut($scope.savedClubID, function () {
+                                $scope.requestTable.push(getObject("POST : //events//checkout" + "      -> CLUB ID: " + $scope.savedClubID));
+                                $scope.savedClubID = null;
+                                $scope.savedLocation = null;
+                                $scope.nowLocation = generator.genLocation();
+                            })
+                        }, 500);
                     });
-                }, 1000);
+                };
 
+                $scope.stopSimulation = function () {
+                    if (angular.isDefined(stop)) {
+                        $interval.cancel(stop);
+                        stop = undefined;
+                        //$scope.requestTable.length = 0;
+                        $scope.active = false;
+                        $scope.title = "goParty UserSimulator2";
+                        $scope.clubList = [];
+                        $scope.QRcodes = 0;
+                        $scope.nowLocation = null;
+                        $scope.savedLocation = null;
+                        $scope.savedClubID = null;
 
-                return deferred.promise;
-            };
+                        $scope.clearShow = true;
+                    }
+                };
 
-            var leaveClub = function () {
-                sendRequest.sendCheckOut($scope.savedClubID, function () {
-                    $scope.requestTable.push(getObject("POST : //events//checkout" + "      -> CLUB ID: " + $scope.savedClubID));
-                    $timeout(function(){
-                        sendRequest.sendRate($scope.savedClubID, function (rating) {
-                            $scope.requestTable.push(getObject("POST : //events//rate       -> RATING : " +rating ));
-                            $scope.savedClubID = null;
-                            $scope.savedLocation = null;
-                            $scope.nowLocation = generator.genLocation();
-                        })
-                    }, 1000);
+                $scope.resetList = function () {
+                    $scope.requestTable.length = 0;
+                    $scope.id = 0;
+                    $scope.clearShow = false;
+                };
 
-                })
-            };
-
-            $scope.stopSimulation = function () {
-                if (angular.isDefined(stop)) {
-                    $interval.cancel(stop);
-                    stop = undefined;
-                    //$scope.requestTable.length = 0;
-                    $scope.active = false;
-                    $scope.title = "goParty UserSimulator2";
-                    $scope.clubList = [];
-                    $scope.QRcodes = 0;
-                    $scope.nowLocation = null;
-                    $scope.savedLocation = null;
-
-                    $scope.clearShow = true;
+                function genBoolean() {
+                    return Math.random() < 0.7;
                 }
-            };
 
-            $scope.resetList = function(){
-                $scope.requestTable.length = 0;
-                $scope.id = 0;
-                $scope.clearShow=false;
-            };
-
-            function genBoolean() {
-                return Math.random() < 0.7;
+                function genClub() {
+                    var index = Math.floor(Math.random() * $scope.clubList.length);
+                    return $scope.clubList[index];
+                }
             }
-
-            function genClub() {
-                var index = Math.floor(Math.random() * $scope.clubList.length);
-                return $scope.clubList[index];
-            }
-        }]);
+            ])
+            ;
